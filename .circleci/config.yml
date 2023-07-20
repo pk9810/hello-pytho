@@ -1,6 +1,4 @@
 version: 2.1
-orbs:
-  kubernetes: circleci/kubernetes@1.0.0
 
 jobs:
   build_and_deploy_first_app:
@@ -18,8 +16,11 @@ jobs:
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
             docker push $DOCKER_USERNAME/my-http-server
       - deploy_first_app:
-          requires:
-            - build_and_deploy_second_app
+          command: |
+            # Replace this with your deployment commands
+            # For example, you can use kubectl or helm to deploy the application
+            echo "Deploying the first app"
+            kubectl apply -f first-app.yaml
     environment:
       DOCKER_USERNAME: pk051098
 
@@ -38,8 +39,11 @@ jobs:
             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
             docker push $DOCKER_USERNAME/my-message-reverser
       - deploy_second_app:
-          requires:
-            - deploy_first_app
+          command: |
+            # Replace this with your deployment commands
+            # For example, you can use kubectl or helm to deploy the application
+            echo "Deploying the second app"
+            kubectl apply -f second-app.yaml
     environment:
       DOCKER_USERNAME: pk051098
 
