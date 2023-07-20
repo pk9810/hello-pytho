@@ -1,0 +1,53 @@
+version: 2.1
+orbs:
+  kubernetes: circleci/kubernetes@0.13.0
+
+jobs:
+  build_and_deploy_first_app:
+    docker:
+      - image: docker:20.10.8
+    working_directory: /first-app
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.8
+      - run:
+          name: Build and Push Docker Image
+          command: |
+            docker build -t $DOCKER_USERNAME/my-http-server .
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker push $DOCKER_USERNAME/my-http-server
+      - deploy_first_app:
+          requires:
+            - build_and_deploy_second_app
+    environment:
+      DOCKER_USERNAME: pk051098
+
+  build_and_deploy_second_app:
+    docker:
+      - image: docker:20.10.8
+    working_directory: /second-app
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.8
+      - run:
+          name: Build and Push Docker Image
+          command: |
+            docker build -t $DOCKER_USERNAME/my-message-reverser .
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker push $DOCKER_USERNAME/my-message-reverser
+      - deploy_second_app:
+          requires:
+            - deploy_first_app
+    environment:
+      DOCKER_USERNAME: pk051098
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build_and_deploy_first_app
+      - build_and_deploy_second_app:
+          requires:
+            - build_and_deploy_first_app
